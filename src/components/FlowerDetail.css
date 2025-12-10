@@ -52,21 +52,24 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--gradient-primary);
-    border: none;
-    color: white;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid #8b5cf6;
+    color: #7c3aed;
     font-size: 1.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
 }
 
 .edit-pen-btn:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-lg);
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 /* Speaker Button */
@@ -74,22 +77,25 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--gradient-accent);
-    border: none;
-    color: white;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid #10b981;
+    color: #059669;
     font-size: 1.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
     margin: 0 auto;
 }
 
 .speaker-btn:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-lg);
+    background: rgba(16, 185, 129, 0.1);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .speaker-btn:disabled {
@@ -286,7 +292,29 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    margin-bottom: 0;
+}
+
+/* Title with speaker button layout */
+.title-with-speaker {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
     margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.title-with-speaker .speaker-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Language selector wrapper in header */
+.language-selector-wrapper {
+    display: flex;
+    align-items: center;
 }
 
 .detail-tags {
@@ -297,11 +325,45 @@
 }
 
 .detail-tag {
-    padding: 0.5rem 1rem;
-    background: var(--gradient-accent);
+    padding: 0.6rem 1.2rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid #10b981;
     border-radius: var(--radius-full);
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #059669;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.detail-tag:hover {
+    background: rgba(16, 185, 129, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+/* Different colors for type vs color tags */
+.detail-tag:first-child {
+    border-color: #8b5cf6;
+    color: #7c3aed;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+}
+
+.detail-tag:first-child:hover {
+    background: rgba(139, 92, 246, 0.1);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+/* Color tag - uses dynamic inline styles */
+.detail-tag.color-tag {
+    /* Inline styles override border-color, color, and box-shadow */
+    transition: all 0.3s ease;
+}
+
+.detail-tag.color-tag:hover {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .detail-section {
@@ -333,7 +395,135 @@
     white-space: pre-wrap;
 }
 
-/* QR Code Section */
+/* QR Code Fullscreen Modal */
+.qr-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+}
+
+.qr-modal {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    position: relative;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.qr-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.qr-close-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.qr-modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.qr-code-large {
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.qr-flower-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.qr-modal-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.qr-share-btn,
+.qr-print-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-full);
+    border: 2px solid;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.qr-share-btn {
+    border-color: #10b981;
+    color: #059669;
+}
+
+.qr-share-btn:hover {
+    background: rgba(16, 185, 129, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.qr-print-btn {
+    border-color: #8b5cf6;
+    color: #7c3aed;
+}
+
+.qr-print-btn:hover {
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Legacy QR section styles (kept for compatibility) */
 .qr-section {
     display: flex;
     flex-direction: column;

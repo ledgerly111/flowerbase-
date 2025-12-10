@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import './FlowerDetail.css';
 
 // Indian language options for voice-over
@@ -15,6 +17,68 @@ const INDIAN_LANGUAGES = [
     { code: 'ml-IN', name: 'മലയാളം (Malayalam)', translationCode: 'ml' },
     { code: 'pa-IN', name: 'ਪੰਜਾਬੀ (Punjabi)', translationCode: 'pa' }
 ];
+
+// Color keyword to CSS color mapping
+const COLOR_MAP = {
+    red: '#e53e3e',
+    blue: '#3182ce',
+    green: '#38a169',
+    yellow: '#ecc94b',
+    orange: '#ed8936',
+    purple: '#805ad5',
+    pink: '#ed64a6',
+    white: '#f7fafc',
+    black: '#1a202c',
+    brown: '#8b4513',
+    gray: '#718096',
+    grey: '#718096',
+    violet: '#8b5cf6',
+    indigo: '#667eea',
+    teal: '#319795',
+    cyan: '#0bc5ea',
+    magenta: '#d53f8c',
+    maroon: '#9b2c2c',
+    navy: '#2c5282',
+    olive: '#6b8e23',
+    coral: '#ff7f50',
+    salmon: '#fa8072',
+    lavender: '#b794f4',
+    crimson: '#dc143c',
+    gold: '#d69e2e',
+    silver: '#a0aec0',
+    peach: '#ffdab9',
+    cream: '#fffdd0',
+    beige: '#f5f5dc',
+    ivory: '#fffff0',
+    rose: '#f687b3',
+    scarlet: '#ff2400',
+    burgundy: '#800020',
+    plum: '#dda0dd',
+    lime: '#32cd32',
+    mint: '#98fb98',
+    aqua: '#00ffff',
+    turquoise: '#40e0d0'
+};
+
+// Extract CSS color from a color description string
+const extractColor = (colorString) => {
+    if (!colorString) return '#10b981'; // Default emerald
+
+    const lowerColor = colorString.toLowerCase().trim();
+
+    // First check if the exact string is a valid CSS color
+    if (COLOR_MAP[lowerColor]) return COLOR_MAP[lowerColor];
+
+    // Try to find a color keyword in the string
+    for (const [colorName, cssColor] of Object.entries(COLOR_MAP)) {
+        if (lowerColor.includes(colorName)) {
+            return cssColor;
+        }
+    }
+
+    // If no match found, return a default color
+    return '#10b981';
+};
 
 export default function FlowerDetail({ flower, onBack, onEdit, onDelete }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -292,7 +356,7 @@ export default function FlowerDetail({ flower, onBack, onEdit, onDelete }) {
                 <button className="back-btn" onClick={onBack} title="Back to Gallery">
                     ← Back
                 </button>
-                <div className="voice-controls">
+                <div className="language-selector-wrapper">
                     <select
                         className="language-selector"
                         value={selectedLanguage.code}
@@ -306,14 +370,6 @@ export default function FlowerDetail({ flower, onBack, onEdit, onDelete }) {
                             </option>
                         ))}
                     </select>
-                    <button
-                        className={`speaker-btn ${isSpeaking ? 'speaking' : ''} ${(isTranslating || isPreparingSpeech) ? 'loading' : ''}`}
-                        onClick={handleSpeak}
-                        title={isTranslating ? "Translating..." : isPreparingSpeech ? "Preparing..." : isSpeaking ? "Stop Voice-Over" : "Play Voice-Over"}
-                        disabled={isTranslating}
-                    >
-                        {(isTranslating || isPreparingSpeech) ? '' : isSpeaking ? '🔊' : '🔇'}
-                    </button>
                 </div>
                 <div className="menu-container" ref={menuRef}>
                     <button className="edit-pen-btn" onClick={handleMenuToggle} title="Options">
@@ -369,9 +425,19 @@ export default function FlowerDetail({ flower, onBack, onEdit, onDelete }) {
                         </div>
                     )}
 
-                    <h1 className="detail-title">
-                        {translatedContent?.name || flower.name}
-                    </h1>
+                    <div className="title-with-speaker">
+                        <h1 className="detail-title">
+                            {translatedContent?.name || flower.name}
+                        </h1>
+                        <button
+                            className={`speaker-btn ${isSpeaking ? 'speaking' : ''} ${(isTranslating || isPreparingSpeech) ? 'loading' : ''}`}
+                            onClick={handleSpeak}
+                            title={isTranslating ? "Translating..." : isPreparingSpeech ? "Preparing..." : isSpeaking ? "Stop Voice-Over" : "Play Voice-Over"}
+                            disabled={isTranslating}
+                        >
+                            {(isTranslating || isPreparingSpeech) ? '' : isSpeaking ? '🔊' : '🔇'}
+                        </button>
+                    </div>
 
                     {((translatedContent?.type || flower.type) || (translatedContent?.color || flower.color)) && (
                         <div className="detail-tags">
@@ -379,7 +445,16 @@ export default function FlowerDetail({ flower, onBack, onEdit, onDelete }) {
                                 <span className="detail-tag">{translatedContent?.type || flower.type}</span>
                             )}
                             {(translatedContent?.color || flower.color) && (
-                                <span className="detail-tag">{translatedContent?.color || flower.color}</span>
+                                <span
+                                    className="detail-tag color-tag"
+                                    style={{
+                                        borderColor: extractColor(flower.color),
+                                        color: extractColor(flower.color),
+                                        boxShadow: `0 2px 8px ${extractColor(flower.color)}33`
+                                    }}
+                                >
+                                    {translatedContent?.color || flower.color}
+                                </span>
                             )}
                         </div>
                     )}
@@ -405,22 +480,129 @@ export default function FlowerDetail({ flower, onBack, onEdit, onDelete }) {
                         </div>
                     )}
 
-                    {/* QR Code Section - Only show when toggled */}
+                    {/* QR Code Fullscreen Modal */}
                     {showQRCode && (
-                        <div className="detail-section qr-section fade-in">
-                            <h3 className="section-title">QR Code & Link</h3>
-                            <div className="qr-code-container">
-                                <QRCodeSVG
-                                    value={flowerURL}
-                                    size={200}
-                                    level="H"
-                                    includeMargin={true}
-                                    fgColor="#1a1a35"
-                                    bgColor="#ffffff"
-                                />
-                            </div>
-                            <div className="url-display">
-                                <code className="url-code">{flowerURL}</code>
+                        <div className="qr-modal-overlay" onClick={handleToggleQR}>
+                            <div className="qr-modal" onClick={(e) => e.stopPropagation()}>
+                                <button className="qr-close-btn" onClick={handleToggleQR}>✕</button>
+                                <div className="qr-modal-content">
+                                    <div className="qr-code-large" id="qr-code-print">
+                                        <QRCodeSVG
+                                            value={flowerURL}
+                                            size={280}
+                                            level="H"
+                                            includeMargin={true}
+                                            fgColor="#1a1a35"
+                                            bgColor="#ffffff"
+                                        />
+                                    </div>
+                                    <p className="qr-flower-name">{flower.name}</p>
+                                    <div className="qr-modal-actions">
+                                        <button
+                                            className="qr-share-btn"
+                                            onClick={async () => {
+                                                try {
+                                                    // Show loading state
+                                                    const btn = document.querySelector('.qr-share-btn');
+                                                    const originalText = btn.textContent;
+                                                    btn.textContent = '⏳ Generating...';
+                                                    btn.disabled = true;
+
+                                                    // Get the QR code element
+                                                    const qrElement = document.getElementById('qr-code-print');
+
+                                                    // Convert SVG to canvas
+                                                    const canvas = await html2canvas(qrElement, {
+                                                        backgroundColor: '#ffffff',
+                                                        scale: 2
+                                                    });
+
+                                                    // Create PDF
+                                                    const pdf = new jsPDF({
+                                                        orientation: 'portrait',
+                                                        unit: 'mm',
+                                                        format: 'a6'
+                                                    });
+
+                                                    const imgData = canvas.toDataURL('image/png');
+                                                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                                                    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                                                    // Add QR code centered
+                                                    const imgWidth = 80;
+                                                    const imgHeight = 80;
+                                                    const x = (pdfWidth - imgWidth) / 2;
+                                                    const y = 15;
+
+                                                    pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+
+                                                    // Add flower name
+                                                    pdf.setFontSize(16);
+                                                    pdf.setFont(undefined, 'bold');
+                                                    pdf.text(flower.name, pdfWidth / 2, y + imgHeight + 15, { align: 'center' });
+
+                                                    // Get PDF as blob
+                                                    const pdfBlob = pdf.output('blob');
+                                                    const pdfFile = new File([pdfBlob], `${flower.name}-QRCode.pdf`, { type: 'application/pdf' });
+
+                                                    // Try to share the PDF file
+                                                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                                                        await navigator.share({
+                                                            title: `${flower.name} - QR Code`,
+                                                            text: `QR Code for ${flower.name}`,
+                                                            files: [pdfFile]
+                                                        });
+                                                    } else {
+                                                        // Fallback: Download the PDF
+                                                        pdf.save(`${flower.name}-QRCode.pdf`);
+                                                        // Show toast
+                                                        const toast = document.createElement('div');
+                                                        toast.textContent = '✓ PDF downloaded!';
+                                                        toast.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; z-index: 10000;';
+                                                        document.body.appendChild(toast);
+                                                        setTimeout(() => toast.remove(), 2000);
+                                                    }
+
+                                                    btn.textContent = originalText;
+                                                    btn.disabled = false;
+                                                } catch (err) {
+                                                    console.error('Share failed:', err);
+                                                    alert('Failed to generate PDF. Please try again.');
+                                                }
+                                            }}
+                                        >
+                                            📤 Share
+                                        </button>
+                                        <button
+                                            className="qr-print-btn"
+                                            onClick={() => {
+                                                const printWindow = window.open('', '_blank');
+                                                const qrElement = document.getElementById('qr-code-print');
+                                                if (printWindow && qrElement) {
+                                                    printWindow.document.write(`
+                                                        <html>
+                                                            <head>
+                                                                <title>${flower.name} - QR Code</title>
+                                                                <style>
+                                                                    body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: sans-serif; }
+                                                                    h2 { margin-top: 20px; color: #333; }
+                                                                </style>
+                                                            </head>
+                                                            <body>
+                                                                ${qrElement.innerHTML}
+                                                                <h2>${flower.name}</h2>
+                                                            </body>
+                                                        </html>
+                                                    `);
+                                                    printWindow.document.close();
+                                                    printWindow.print();
+                                                }
+                                            }}
+                                        >
+                                            🖨️ Print
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
