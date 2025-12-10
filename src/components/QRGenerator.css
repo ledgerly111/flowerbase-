@@ -1,0 +1,119 @@
+.qr-container {
+    min-height: 100vh;
+    padding: var(--spacing-lg) var(--spacing-md);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.qr-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+.qr-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.qr-title-section {
+    text-align: center;
+}
+
+.qr-title-section h2 {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.qr-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+.qr-code-wrapper {
+    padding: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--gradient-glass);
+}
+
+.qr-code-display {
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    animation: pulse 2s ease infinite;
+}
+
+.qr-info {
+    text-align: center;
+}
+
+.qr-hint {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 300px;
+}
+
+.qr-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.qr-actions .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.qr-url-display {
+    background: var(--surface);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.qr-url-display label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-xs);
+}
+
+.url-code {
+    display: block;
+    background: var(--surface);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    color: var(--primary);
+    word-break: break-all;
+    font-style: normal;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .qr-container {
+        padding: var(--spacing-md) var(--spacing-sm);
+    }
+
+    .qr-title-section h2 {
+        font-size: 2rem;
+    }
+
+    .qr-code-wrapper {
+        padding: var(--spacing-md);
+    }
+
+    .qr-code-display svg {
+        width: 220px !important;
+        height: 220px !important;
+    }
+}

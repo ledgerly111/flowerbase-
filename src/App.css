@@ -1,0 +1,9 @@
+.app {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Smooth view transitions */
+.app>* {
+  animation: fadeIn 0.4s ease;
+}
