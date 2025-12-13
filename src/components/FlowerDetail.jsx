@@ -140,14 +140,16 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
         }
     };
 
-    // Translation function using MyMemory Translation API (free, no auth required)
     // Translation function using MyMemory Translation API
-    // Handles text exceeding 500 chars by chunking
+    // Handles rate limiting with delays between requests
     const translateText = async (text, targetLang) => {
         if (!text) return "";
         if (targetLang === 'en') return text;
 
         const MAX_CHUNK_SIZE = 450; // Safe limit below 500
+
+        // Helper to add delay between API calls (rate limiting)
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         // Helper to split text into chunks
         const splitText = (str) => {
@@ -177,24 +179,47 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
 
         try {
             const chunks = splitText(text);
-            const translationPromises = chunks.map(async (chunk) => {
+            const translatedChunks = [];
+
+            // Process chunks sequentially with delay to avoid rate limiting
+            for (let i = 0; i < chunks.length; i++) {
+                if (i > 0) {
+                    await delay(600); // Wait 600ms between requests
+                }
+
+                const chunk = chunks[i];
                 const response = await fetch(
                     `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|${targetLang}`
                 );
                 const data = await response.json();
 
-                // Check if API returned an error message as translation
+                // Check for rate limiting or errors
+                if (data.responseStatus === 429) {
+                    console.warn('Rate limited, waiting and retrying...');
+                    await delay(2000); // Wait 2 seconds
+                    const retryResponse = await fetch(
+                        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|${targetLang}`
+                    );
+                    const retryData = await retryResponse.json();
+                    if (retryData.responseData?.translatedText) {
+                        translatedChunks.push(retryData.responseData.translatedText);
+                    } else {
+                        translatedChunks.push(chunk); // Fallback to original
+                    }
+                    continue;
+                }
+
                 if (data.responseStatus !== 200 ||
                     (data.responseData.translatedText &&
                         (data.responseData.translatedText.includes("QUERY LENGTH LIMIT EXCEEDED") ||
                             data.responseData.translatedText.includes("MYMEMORY WARNING")))) {
-                    throw new Error("Translation API limit or error");
+                    translatedChunks.push(chunk); // Fallback to original
+                    continue;
                 }
 
-                return data.responseData.translatedText;
-            });
+                translatedChunks.push(data.responseData.translatedText);
+            }
 
-            const translatedChunks = await Promise.all(translationPromises);
             return translatedChunks.join(" ");
         } catch (error) {
             console.warn('Translation failed, falling back to original text:', error);
@@ -224,18 +249,26 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
             }
 
             setIsTranslating(true);
+            console.log('Starting translation to:', selectedLanguage.name);
 
-            const translated = {
-                name: await translateText(flower.name, selectedLanguage.translationCode),
-                type: flower.type ? await translateText(flower.type, selectedLanguage.translationCode) : null,
-                color: flower.color ? await translateText(flower.color, selectedLanguage.translationCode) : null,
-                description: flower.description ? await translateText(flower.description, selectedLanguage.translationCode) : null,
-                bloomingSeason: flower.bloomingSeason ? await translateText(flower.bloomingSeason, selectedLanguage.translationCode) : null,
-                careInstructions: flower.careInstructions ? await translateText(flower.careInstructions, selectedLanguage.translationCode) : null
-            };
+            try {
+                const translated = {
+                    name: await translateText(flower.name, selectedLanguage.translationCode),
+                    type: flower.type ? await translateText(flower.type, selectedLanguage.translationCode) : null,
+                    color: flower.color ? await translateText(flower.color, selectedLanguage.translationCode) : null,
+                    description: flower.description ? await translateText(flower.description, selectedLanguage.translationCode) : null,
+                    bloomingSeason: flower.bloomingSeason ? await translateText(flower.bloomingSeason, selectedLanguage.translationCode) : null,
+                    careInstructions: flower.careInstructions ? await translateText(flower.careInstructions, selectedLanguage.translationCode) : null
+                };
 
-            setTranslatedContent(translated);
-            setIsTranslating(false);
+                console.log('Translation complete:', translated);
+                setTranslatedContent(translated);
+            } catch (error) {
+                console.error('Translation error:', error);
+                // Keep original content on error
+            } finally {
+                setIsTranslating(false);
+            }
         };
 
         translateContent();
