@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import FlowerGallery from './components/FlowerGallery';
 import FlowerForm from './components/FlowerForm';
 import FlowerDetail from './components/FlowerDetail';
+import Settings from './components/Settings';
 import { getFlowers, getFlowerById, addFlower, updateFlower, deleteFlower } from './firebaseService';
 import './App.css';
 
@@ -12,6 +13,9 @@ function App() {
   const [editingFlower, setEditingFlower] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isViewOnly, setIsViewOnly] = useState(false);
 
   // Load flowers from Firebase on mount
   useEffect(() => {
@@ -30,6 +34,7 @@ function App() {
           if (flower) {
             setSelectedFlower(flower);
             setCurrentView('detail');
+            setIsViewOnly(true); // Enable view-only mode for QR visitors
           }
         }
       } catch (err) {
@@ -98,6 +103,7 @@ function App() {
     setEditingFlower(null);
     setCurrentView('form');
     setSelectedFlower(null);
+    setSidebarOpen(false);
   };
 
   const handleEditFlower = (flower) => {
@@ -144,41 +150,95 @@ function App() {
 
   return (
     <div className="app">
+      {/* Global Pink Header - Hidden for view-only QR visitors */}
+      {!isViewOnly && (
+        <header className="app-header">
+          <button className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <h1 className="header-title" onClick={handleBackToGallery} style={{ cursor: 'pointer' }}>
+            Flower Base
+          </h1>
+        </header>
+      )}
+
+      {/* Global Sidebar - Hidden for view-only QR visitors */}
+      {!isViewOnly && (
+        <>
+          <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+            <div className="sidebar-header">
+              <h2>Menu</h2>
+              <button className="close-btn" onClick={() => setSidebarOpen(false)}>✕</button>
+            </div>
+            <nav className="sidebar-nav">
+              <a href="#" className={`sidebar-link ${currentView === 'gallery' ? 'active' : ''}`}
+                onClick={(e) => { e.preventDefault(); handleBackToGallery(); setSidebarOpen(false); }}>
+                <span className="sidebar-icon">🏠</span>
+                <span>Home</span>
+              </a>
+              <a href="#" className={`sidebar-link ${currentView === 'form' ? 'active' : ''}`}
+                onClick={(e) => { e.preventDefault(); handleNewFlower(); }}>
+                <span className="sidebar-icon">➕</span>
+                <span>Create Space</span>
+              </a>
+              <a href="#" className="sidebar-link"
+                onClick={(e) => { e.preventDefault(); setShowSettings(true); setSidebarOpen(false); }}>
+                <span className="sidebar-icon">⚙️</span>
+                <span>Settings</span>
+              </a>
+            </nav>
+          </div>
+
+          {/* Sidebar Overlay */}
+          {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>}
+
+          {/* Settings Modal */}
+          {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+        </>
+      )}
+
+      {/* Loading Overlay */}
       {isLoading && (
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
         </div>
       )}
 
-      {currentView === 'gallery' && (
-        <FlowerGallery
-          flowers={flowers}
-          onNewFlower={handleNewFlower}
-          onSelectFlower={handleSelectFlower}
-          onEditFlower={handleEditFlower}
-          onDeleteFlower={handleDeleteFlower}
-        />
-      )}
+      {/* Main Content */}
+      <main className={`app-main ${isViewOnly ? 'view-only' : ''}`}>
+        {currentView === 'gallery' && (
+          <FlowerGallery
+            flowers={flowers}
+            onNewFlower={handleNewFlower}
+            onSelectFlower={handleSelectFlower}
+            onEditFlower={handleEditFlower}
+            onDeleteFlower={handleDeleteFlower}
+          />
+        )}
 
-      {currentView === 'form' && (
-        <FlowerForm
-          onSave={editingFlower ? handleUpdateFlower : handleSaveFlower}
-          onCancel={handleBackToGallery}
-          initialData={editingFlower}
-          isEditing={!!editingFlower}
-        />
-      )}
+        {currentView === 'form' && (
+          <FlowerForm
+            onSave={editingFlower ? handleUpdateFlower : handleSaveFlower}
+            onCancel={handleBackToGallery}
+            initialData={editingFlower}
+            isEditing={!!editingFlower}
+          />
+        )}
 
-      {currentView === 'detail' && selectedFlower && (
-        <FlowerDetail
-          flower={selectedFlower}
-          allFlowers={flowers}
-          onBack={handleBackToGallery}
-          onEdit={() => handleEditFlower(selectedFlower)}
-          onDelete={() => handleDeleteFlower(selectedFlower.id)}
-          onSelectFlower={handleSelectFlower}
-        />
-      )}
+        {currentView === 'detail' && selectedFlower && (
+          <FlowerDetail
+            flower={selectedFlower}
+            allFlowers={flowers}
+            onBack={handleBackToGallery}
+            onEdit={() => handleEditFlower(selectedFlower)}
+            onDelete={() => handleDeleteFlower(selectedFlower.id)}
+            onSelectFlower={handleSelectFlower}
+            isViewOnly={isViewOnly}
+          />
+        )}
+      </main>
     </div>
   );
 }

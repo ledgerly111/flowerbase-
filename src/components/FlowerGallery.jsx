@@ -1,51 +1,8 @@
-import { useState } from 'react';
-import Settings from './Settings';
 import './FlowerGallery.css';
 
-export default function FlowerGallery({ flowers, onNewFlower, onSelectFlower, onEditFlower, onDeleteFlower }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-
+export default function FlowerGallery({ flowers, onNewFlower, onSelectFlower }) {
   return (
     <div className="gallery-container">
-      {/* Pink Header */}
-      <header className="app-header">
-        <button className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-        <h1 className="header-title">Flower Base</h1>
-      </header>
-
-      {/* Sidebar */}
-      <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <h2>Menu</h2>
-          <button className="close-btn" onClick={() => setSidebarOpen(false)}>✕</button>
-        </div>
-        <nav className="sidebar-nav">
-          <a href="#" className="sidebar-link active" onClick={(e) => { e.preventDefault(); setSidebarOpen(false); }}>
-            <span className="sidebar-icon">🏠</span>
-            <span>Home</span>
-          </a>
-          <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); onNewFlower(); setSidebarOpen(false); }}>
-            <span className="sidebar-icon">➕</span>
-            <span>Create Space</span>
-          </a>
-          <a href="#" className="sidebar-link" onClick={(e) => { e.preventDefault(); setShowSettings(true); setSidebarOpen(false); }}>
-            <span className="sidebar-icon">⚙️</span>
-            <span>Settings</span>
-          </a>
-        </nav>
-      </div>
-
-      {/* Settings Modal */}
-      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
-
-      {/* Sidebar Overlay */}
-      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>}
-
       {/* Main Content */}
       <main className="main-content">
         <p className="page-subtitle">Create and manage your flower collection spaces</p>

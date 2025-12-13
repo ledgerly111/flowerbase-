@@ -80,7 +80,7 @@ const extractColor = (colorString) => {
     return '#10b981';
 };
 
-export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, onDelete, onSelectFlower }) {
+export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, onDelete, onSelectFlower, isViewOnly = false }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
     const [showQRCode, setShowQRCode] = useState(false);
@@ -511,11 +511,18 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
     }
 
     return (
-        <div className="detail-container fade-in">
+        <div className={`detail-container fade-in ${isViewOnly ? 'view-only-mode' : ''}`}>
             <div className="detail-header">
-                <button className="back-btn" onClick={onBack} title="Back to Gallery">
-                    ← Back
-                </button>
+                {!isViewOnly && (
+                    <button className="back-btn" onClick={onBack} title="Back to Gallery">
+                        ← Back
+                    </button>
+                )}
+                {isViewOnly && (
+                    <div className="view-only-badge">
+                        <span>🔒</span> View Only
+                    </div>
+                )}
                 <div className="language-selector-wrapper">
                     <select
                         className="language-selector"
@@ -531,24 +538,26 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                         ))}
                     </select>
                 </div>
-                <div className="menu-container" ref={menuRef}>
-                    <button className="edit-pen-btn" onClick={handleMenuToggle} title="Options">
-                        ✏️
-                    </button>
-                    {showMenu && (
-                        <div className="action-menu">
-                            <button className="menu-item" onClick={handleEdit}>
-                                <span className="menu-icon">✏️</span> Edit Flower
-                            </button>
-                            <button className="menu-item" onClick={handleToggleQR}>
-                                <span className="menu-icon">📱</span> {showQRCode ? 'Hide' : 'Show'} QR Code
-                            </button>
-                            <button className="menu-item delete-item" onClick={handleDelete}>
-                                <span className="menu-icon">🗑️</span> Delete Flower
-                            </button>
-                        </div>
-                    )}
-                </div>
+                {!isViewOnly && (
+                    <div className="menu-container" ref={menuRef}>
+                        <button className="edit-pen-btn" onClick={handleMenuToggle} title="Options">
+                            ✏️
+                        </button>
+                        {showMenu && (
+                            <div className="action-menu">
+                                <button className="menu-item" onClick={handleEdit}>
+                                    <span className="menu-icon">✏️</span> Edit Flower
+                                </button>
+                                <button className="menu-item" onClick={handleToggleQR}>
+                                    <span className="menu-icon">📱</span> {showQRCode ? 'Hide' : 'Show'} QR Code
+                                </button>
+                                <button className="menu-item delete-item" onClick={handleDelete}>
+                                    <span className="menu-icon">🗑️</span> Delete Flower
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="detail-content">
