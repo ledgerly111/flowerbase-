@@ -80,8 +80,6 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isPreparingSpeech, setIsPreparingSpeech] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState(INDIAN_LANGUAGES[0]);
-    const [translatedContent, setTranslatedContent] = useState(null);
-    const [isTranslating, setIsTranslating] = useState(false);
     const menuRef = useRef(null);
     const speechRef = useRef(null);
 
@@ -140,139 +138,17 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
         }
     };
 
-    // Translation function using MyMemory Translation API
-    // Handles rate limiting with delays between requests
-    const translateText = async (text, targetLang) => {
-        if (!text) return "";
-        if (targetLang === 'en') return text;
-
-        const MAX_CHUNK_SIZE = 450; // Safe limit below 500
-
-        // Helper to add delay between API calls (rate limiting)
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-        // Helper to split text into chunks
-        const splitText = (str) => {
-            if (str.length <= MAX_CHUNK_SIZE) return [str];
-
-            const chunks = [];
-            let currentChunk = "";
-            const sentences = str.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [str];
-
-            for (let sentence of sentences) {
-                if ((currentChunk + sentence).length > MAX_CHUNK_SIZE) {
-                    if (currentChunk) chunks.push(currentChunk.trim());
-                    currentChunk = sentence;
-
-                    // If a single sentence is still too huge, force split it
-                    while (currentChunk.length > MAX_CHUNK_SIZE) {
-                        chunks.push(currentChunk.slice(0, MAX_CHUNK_SIZE));
-                        currentChunk = currentChunk.slice(MAX_CHUNK_SIZE);
-                    }
-                } else {
-                    currentChunk += sentence;
-                }
-            }
-            if (currentChunk) chunks.push(currentChunk.trim());
-            return chunks;
-        };
-
-        try {
-            const chunks = splitText(text);
-            const translatedChunks = [];
-
-            // Process chunks sequentially with delay to avoid rate limiting
-            for (let i = 0; i < chunks.length; i++) {
-                if (i > 0) {
-                    await delay(600); // Wait 600ms between requests
-                }
-
-                const chunk = chunks[i];
-                const response = await fetch(
-                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|${targetLang}`
-                );
-                const data = await response.json();
-
-                // Check for rate limiting or errors
-                if (data.responseStatus === 429) {
-                    console.warn('Rate limited, waiting and retrying...');
-                    await delay(2000); // Wait 2 seconds
-                    const retryResponse = await fetch(
-                        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=en|${targetLang}`
-                    );
-                    const retryData = await retryResponse.json();
-                    if (retryData.responseData?.translatedText) {
-                        translatedChunks.push(retryData.responseData.translatedText);
-                    } else {
-                        translatedChunks.push(chunk); // Fallback to original
-                    }
-                    continue;
-                }
-
-                if (data.responseStatus !== 200 ||
-                    (data.responseData.translatedText &&
-                        (data.responseData.translatedText.includes("QUERY LENGTH LIMIT EXCEEDED") ||
-                            data.responseData.translatedText.includes("MYMEMORY WARNING")))) {
-                    translatedChunks.push(chunk); // Fallback to original
-                    continue;
-                }
-
-                translatedChunks.push(data.responseData.translatedText);
-            }
-
-            return translatedChunks.join(" ");
-        } catch (error) {
-            console.warn('Translation failed, falling back to original text:', error);
-            return text; // Fallback to original text on error
-        }
-    };
-
-    // Handle language change
+    // Handle language change (for voice selection only)
     const handleLanguageChange = (e) => {
         const langCode = e.target.value;
         const language = INDIAN_LANGUAGES.find(lang => lang.code === langCode);
         setSelectedLanguage(language);
-        setTranslatedContent(null); // Clear previous translations
 
         // Stop speaking if currently speaking
         if (isSpeaking) {
             handleStopSpeaking();
         }
     };
-
-    // Translate content when language changes (except English)
-    useEffect(() => {
-        const translateContent = async () => {
-            if (selectedLanguage.translationCode === 'en') {
-                setTranslatedContent(null);
-                return;
-            }
-
-            setIsTranslating(true);
-            console.log('Starting translation to:', selectedLanguage.name);
-
-            try {
-                const translated = {
-                    name: await translateText(flower.name, selectedLanguage.translationCode),
-                    type: flower.type ? await translateText(flower.type, selectedLanguage.translationCode) : null,
-                    color: flower.color ? await translateText(flower.color, selectedLanguage.translationCode) : null,
-                    description: flower.description ? await translateText(flower.description, selectedLanguage.translationCode) : null,
-                    bloomingSeason: flower.bloomingSeason ? await translateText(flower.bloomingSeason, selectedLanguage.translationCode) : null,
-                    careInstructions: flower.careInstructions ? await translateText(flower.careInstructions, selectedLanguage.translationCode) : null
-                };
-
-                console.log('Translation complete:', translated);
-                setTranslatedContent(translated);
-            } catch (error) {
-                console.error('Translation error:', error);
-                // Keep original content on error
-            } finally {
-                setIsTranslating(false);
-            }
-        };
-
-        translateContent();
-    }, [selectedLanguage, flower]);
 
     const handleToggleQR = () => {
         setShowQRCode(!showQRCode);
@@ -296,8 +172,8 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
         // Set preparing state to show loading animation
         setIsPreparingSpeech(true);
 
-        // Use translated content if available, otherwise use original
-        const content = translatedContent || {
+        // Use original flower content (no translation)
+        const content = {
             name: flower.name,
             type: flower.type,
             color: flower.color,
