@@ -4,18 +4,11 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import './FlowerDetail.css';
 
-// Indian language options for voice-over
+// Language options for voice-over
 const INDIAN_LANGUAGES = [
     { code: 'en-IN', name: 'English', translationCode: 'en' },
     { code: 'hi-IN', name: 'हिन्दी (Hindi)', translationCode: 'hi' },
-    { code: 'ta-IN', name: 'தமிழ் (Tamil)', translationCode: 'ta' },
-    { code: 'te-IN', name: 'తెలుగు (Telugu)', translationCode: 'te' },
-    { code: 'bn-IN', name: 'বাংলা (Bengali)', translationCode: 'bn' },
-    { code: 'mr-IN', name: 'मराठी (Marathi)', translationCode: 'mr' },
-    { code: 'gu-IN', name: 'ગુજરાતી (Gujarati)', translationCode: 'gu' },
-    { code: 'kn-IN', name: 'ಕನ್ನಡ (Kannada)', translationCode: 'kn' },
-    { code: 'ml-IN', name: 'മലയാളം (Malayalam)', translationCode: 'ml' },
-    { code: 'pa-IN', name: 'ਪੰਜਾਬੀ (Punjabi)', translationCode: 'pa' }
+    { code: 'ml-IN', name: 'മലയാളം (Malayalam)', translationCode: 'ml' }
 ];
 
 // Color keyword to CSS color mapping
