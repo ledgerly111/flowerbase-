@@ -20,9 +20,17 @@ import {
 import { db, storage } from "./firebase";
 
 const FLOWERS_COLLECTION = "flowers";
+const STORAGE_SETTINGS_DOC = "storage_settings";
+
+// Image compression settings - adjust these to control storage usage
+const COMPRESSION_SETTINGS = {
+    maxWidth: 600,      // Max width in pixels (reduce for smaller files)
+    quality: 0.5,       // JPEG quality 0.1-1.0 (lower = smaller file)
+    maxFileSize: 150    // Target max file size in KB
+};
 
 // Helper function to compress image before upload
-const compressImage = async (base64String, maxWidth = 800, quality = 0.7) => {
+const compressImage = async (base64String) => {
     return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
@@ -31,9 +39,9 @@ const compressImage = async (base64String, maxWidth = 800, quality = 0.7) => {
             let height = img.height;
 
             // Calculate new dimensions
-            if (width > maxWidth) {
-                height = (height * maxWidth) / width;
-                width = maxWidth;
+            if (width > COMPRESSION_SETTINGS.maxWidth) {
+                height = (height * COMPRESSION_SETTINGS.maxWidth) / width;
+                width = COMPRESSION_SETTINGS.maxWidth;
             }
 
             canvas.width = width;
@@ -42,11 +50,11 @@ const compressImage = async (base64String, maxWidth = 800, quality = 0.7) => {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Convert to blob
+            // Convert to blob with compression
             canvas.toBlob(
                 (blob) => resolve(blob),
                 'image/jpeg',
-                quality
+                COMPRESSION_SETTINGS.quality
             );
         };
         img.src = base64String;
@@ -122,6 +130,8 @@ export const addFlower = async (flowerData) => {
             name: flowerData.name,
             type: flowerData.type || "",
             color: flowerData.color || "",
+            category: flowerData.category || "",
+            parental: flowerData.parental || "",
             description: flowerData.description || "",
             bloomingSeason: flowerData.bloomingSeason || "",
             careInstructions: flowerData.careInstructions || "",
@@ -163,6 +173,8 @@ export const updateFlower = async (flowerId, flowerData) => {
             name: flowerData.name,
             type: flowerData.type || "",
             color: flowerData.color || "",
+            category: flowerData.category || "",
+            parental: flowerData.parental || "",
             description: flowerData.description || "",
             bloomingSeason: flowerData.bloomingSeason || "",
             careInstructions: flowerData.careInstructions || "",
@@ -210,6 +222,51 @@ export const deleteFlower = async (flowerId) => {
         return true;
     } catch (error) {
         console.error("Error deleting flower:", error);
+        throw error;
+    }
+};
+
+// Get storage statistics
+export const getStorageStats = async () => {
+    try {
+        const flowers = await getFlowers();
+
+        let totalImages = 0;
+        let totalFlowers = flowers.length;
+
+        // Count images
+        flowers.forEach(flower => {
+            if (flower.images) {
+                totalImages += flower.images.length;
+            }
+        });
+
+        // Estimate storage (average compressed image is ~80-150KB)
+        const avgImageSizeKB = 100;
+        const avgFlowerDataKB = 2; // Text data per flower
+
+        const estimatedImageStorageMB = (totalImages * avgImageSizeKB) / 1024;
+        const estimatedDataStorageMB = (totalFlowers * avgFlowerDataKB) / 1024;
+        const totalStorageMB = estimatedImageStorageMB + estimatedDataStorageMB;
+
+        // Free tier limits
+        const freeStorageLimitMB = 5120; // 5GB for Storage
+        const freeDataLimitMB = 1024;    // 1GB for Firestore
+
+        return {
+            totalFlowers,
+            totalImages,
+            estimatedImageStorageMB: estimatedImageStorageMB.toFixed(2),
+            estimatedDataStorageMB: estimatedDataStorageMB.toFixed(2),
+            totalStorageMB: totalStorageMB.toFixed(2),
+            freeStorageLimitMB,
+            freeDataLimitMB,
+            storageUsagePercent: ((estimatedImageStorageMB / freeStorageLimitMB) * 100).toFixed(1),
+            dataUsagePercent: ((estimatedDataStorageMB / freeDataLimitMB) * 100).toFixed(1),
+            compressionSettings: COMPRESSION_SETTINGS
+        };
+    } catch (error) {
+        console.error("Error getting storage stats:", error);
         throw error;
     }
 };

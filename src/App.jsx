@@ -172,9 +172,11 @@ function App() {
       {currentView === 'detail' && selectedFlower && (
         <FlowerDetail
           flower={selectedFlower}
+          allFlowers={flowers}
           onBack={handleBackToGallery}
           onEdit={() => handleEditFlower(selectedFlower)}
           onDelete={() => handleDeleteFlower(selectedFlower.id)}
+          onSelectFlower={handleSelectFlower}
         />
       )}
     </div>

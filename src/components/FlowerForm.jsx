@@ -7,6 +7,8 @@ export default function FlowerForm({ onSave, onCancel, initialData = null, isEdi
         name: initialData?.name || '',
         type: initialData?.type || '',
         color: initialData?.color || '',
+        category: initialData?.category || '',
+        parental: initialData?.parental || '',
         bloomingSeason: initialData?.bloomingSeason || '',
         careInstructions: initialData?.careInstructions || '',
         description: initialData?.description || '',
@@ -24,6 +26,8 @@ export default function FlowerForm({ onSave, onCancel, initialData = null, isEdi
                 name: initialData.name || '',
                 type: initialData.type || '',
                 color: initialData.color || '',
+                category: initialData.category || '',
+                parental: initialData.parental || '',
                 bloomingSeason: initialData.bloomingSeason || '',
                 careInstructions: initialData.careInstructions || '',
                 description: initialData.description || '',
@@ -210,6 +214,43 @@ export default function FlowerForm({ onSave, onCancel, initialData = null, isEdi
                         onChange={handleInputChange}
                         placeholder="e.g., Spring, Summer, Year-round"
                     />
+                </div>
+
+                {/* Category and Parental */}
+                <div className="form-row">
+                    <div className="form-section">
+                        <label className="form-label">Category</label>
+                        <select
+                            name="category"
+                            value={formData.category}
+                            onChange={handleInputChange}
+                        >
+                            <option value="">Select category...</option>
+                            <option value="Flower">Flower</option>
+                            <option value="Fruit">Fruit</option>
+                            <option value="Vegetable">Vegetable</option>
+                            <option value="Herb">Herb</option>
+                            <option value="Tree">Tree</option>
+                            <option value="Shrub">Shrub</option>
+                            <option value="Succulent">Succulent</option>
+                            <option value="Cactus">Cactus</option>
+                            <option value="Vine">Vine</option>
+                            <option value="Fern">Fern</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div className="form-section">
+                        <label className="form-label">Parental (Parent Plants)</label>
+                        <input
+                            type="text"
+                            name="parental"
+                            value={formData.parental}
+                            onChange={handleInputChange}
+                            placeholder="e.g., Red Rose, White Lily"
+                        />
+                        <span className="form-hint">Enter parent plant names, separated by commas</span>
+                    </div>
                 </div>
 
                 <div className="form-section">
