@@ -490,35 +490,28 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
 
                 {/* Flower Information Card */}
                 <div className="detail-info-card card">
-                    {isTranslating && (
-                        <div className="translation-loading">
-                            <span>🌐 Translating to {selectedLanguage.name}...</span>
-                        </div>
-                    )}
-
                     <div className="title-with-speaker">
                         <h1 className="detail-title">
-                            {translatedContent?.name || flower.name}
+                            {flower.name}
                         </h1>
                         <button
-                            className={`speaker-btn ${isSpeaking ? 'speaking' : ''} ${(isTranslating || isPreparingSpeech) ? 'loading' : ''}`}
+                            className={`speaker-btn ${isSpeaking ? 'speaking' : ''} ${isPreparingSpeech ? 'loading' : ''}`}
                             onClick={handleSpeak}
-                            title={isTranslating ? "Translating..." : isPreparingSpeech ? "Preparing..." : isSpeaking ? "Stop Voice-Over" : "Play Voice-Over"}
-                            disabled={isTranslating}
+                            title={isPreparingSpeech ? "Preparing..." : isSpeaking ? "Stop Voice-Over" : "Play Voice-Over"}
                         >
-                            {(isTranslating || isPreparingSpeech) ? '' : isSpeaking ? '🔊' : '🔇'}
+                            {isPreparingSpeech ? '' : isSpeaking ? '🔊' : '🔇'}
                         </button>
                     </div>
 
-                    {((translatedContent?.type || flower.type) || (translatedContent?.color || flower.color) || flower.category) && (
+                    {(flower.type || flower.color || flower.category) && (
                         <div className="detail-tags">
                             {flower.category && (
                                 <span className="detail-tag category-tag">{flower.category}</span>
                             )}
-                            {(translatedContent?.type || flower.type) && (
-                                <span className="detail-tag">{translatedContent?.type || flower.type}</span>
+                            {flower.type && (
+                                <span className="detail-tag">{flower.type}</span>
                             )}
-                            {(translatedContent?.color || flower.color) && (
+                            {flower.color && (
                                 <span
                                     className="detail-tag color-tag"
                                     style={{
@@ -527,7 +520,7 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                                         boxShadow: `0 2px 8px ${extractColor(flower.color)}33`
                                     }}
                                 >
-                                    {translatedContent?.color || flower.color}
+                                    {flower.color}
                                 </span>
                             )}
                         </div>
@@ -562,24 +555,24 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                         </div>
                     )}
 
-                    {(translatedContent?.description || flower.description) && (
+                    {flower.description && (
                         <div className="detail-section">
                             <h3 className="section-title">Description</h3>
-                            <p className="section-content">{translatedContent?.description || flower.description}</p>
+                            <p className="section-content">{flower.description}</p>
                         </div>
                     )}
 
-                    {(translatedContent?.bloomingSeason || flower.bloomingSeason) && (
+                    {flower.bloomingSeason && (
                         <div className="detail-section">
                             <h3 className="section-title">Blooming Season</h3>
-                            <p className="section-content">{translatedContent?.bloomingSeason || flower.bloomingSeason}</p>
+                            <p className="section-content">{flower.bloomingSeason}</p>
                         </div>
                     )}
 
-                    {(translatedContent?.careInstructions || flower.careInstructions) && (
+                    {flower.careInstructions && (
                         <div className="detail-section">
                             <h3 className="section-title">Care Instructions</h3>
-                            <p className="section-content">{translatedContent?.careInstructions || flower.careInstructions}</p>
+                            <p className="section-content">{flower.careInstructions}</p>
                         </div>
                     )}
                 </div>
