@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import FlowerGallery from './components/FlowerGallery';
 import FlowerForm from './components/FlowerForm';
 import FlowerDetail from './components/FlowerDetail';
+import { getFlowers, getFlowerById, addFlower, updateFlower, deleteFlower } from './firebaseService';
 import './App.css';
 
 function App() {
@@ -10,83 +10,87 @@ function App() {
   const [currentView, setCurrentView] = useState('gallery'); // 'gallery', 'form', 'detail'
   const [selectedFlower, setSelectedFlower] = useState(null);
   const [editingFlower, setEditingFlower] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Load flowers from localStorage on mount
+  // Load flowers from Firebase on mount
   useEffect(() => {
-    const savedFlowers = localStorage.getItem('flowers');
-    if (savedFlowers) {
-      const flowersData = JSON.parse(savedFlowers);
+    const loadFlowers = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const flowersData = await getFlowers();
+        setFlowers(flowersData);
 
-      // Migrate old data structure (single image) to new structure (images array)
-      const migratedFlowers = flowersData.map(flower => {
-        if (flower.image && !flower.images) {
-          const { image, ...rest } = flower; // Remove old image property
-          return {
-            ...rest,
-            images: [image]
-          };
+        // Check if URL has a flower parameter (from QR scan)
+        const params = new URLSearchParams(window.location.search);
+        const flowerId = params.get('flower');
+        if (flowerId) {
+          const flower = await getFlowerById(flowerId);
+          if (flower) {
+            setSelectedFlower(flower);
+            setCurrentView('detail');
+          }
         }
-        return flower;
-      });
-
-      setFlowers(migratedFlowers);
-    }
-
-    // Check if URL has a flower parameter (from QR scan)
-    const params = new URLSearchParams(window.location.search);
-    const flowerId = params.get('flower');
-    if (flowerId) {
-      const savedFlowers = localStorage.getItem('flowers');
-      if (savedFlowers) {
-        const flowersData = JSON.parse(savedFlowers);
-        const flower = flowersData.find(f => f.id === flowerId);
-        if (flower) {
-          setSelectedFlower(flower);
-          setCurrentView('detail');
-        }
+      } catch (err) {
+        console.error("Error loading flowers:", err);
+        setError("Failed to load flowers. Please check your connection.");
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, []);
-
-  // Save flowers to localStorage whenever they change
-  useEffect(() => {
-    if (flowers.length > 0) {
-      localStorage.setItem('flowers', JSON.stringify(flowers));
-    } else {
-      localStorage.removeItem('flowers');
-    }
-  }, [flowers]);
-
-  const handleSaveFlower = (flowerData) => {
-    const newFlower = {
-      ...flowerData,
-      id: uuidv4(),
-      createdAt: new Date().toISOString()
     };
 
-    setFlowers(prev => [...prev, newFlower]);
-    setCurrentView('gallery'); // Navigate back to gallery
-    return newFlower.id; // Return the ID for QR generation
+    loadFlowers();
+  }, []);
+
+  const handleSaveFlower = async (flowerData) => {
+    try {
+      setIsLoading(true);
+      const newFlower = await addFlower(flowerData);
+      setFlowers(prev => [newFlower, ...prev]);
+      setCurrentView('gallery');
+      return newFlower.id;
+    } catch (err) {
+      console.error("Error saving flower:", err);
+      alert("Failed to save flower. Please try again.");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleUpdateFlower = (flowerId, updatedData) => {
-    setFlowers(prev => prev.map(flower =>
-      flower.id === flowerId
-        ? { ...flower, ...updatedData, updatedAt: new Date().toISOString() }
-        : flower
-    ));
-    setCurrentView('gallery'); // Navigate back to gallery after update
-    return flowerId;
+  const handleUpdateFlower = async (flowerId, updatedData) => {
+    try {
+      setIsLoading(true);
+      const updated = await updateFlower(flowerId, updatedData);
+      setFlowers(prev => prev.map(flower =>
+        flower.id === flowerId ? updated : flower
+      ));
+      setCurrentView('gallery');
+      return flowerId;
+    } catch (err) {
+      console.error("Error updating flower:", err);
+      alert("Failed to update flower. Please try again.");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteFlower = (flowerId) => {
-    if (window.confirm('Are you sure you want to delete this flower?')) {
+  const handleDeleteFlower = async (flowerId) => {
+    try {
+      setIsLoading(true);
+      await deleteFlower(flowerId);
       setFlowers(prev => prev.filter(flower => flower.id !== flowerId));
 
-      // If we're viewing the deleted flower, go back to gallery
       if (selectedFlower?.id === flowerId) {
         handleBackToGallery();
       }
+    } catch (err) {
+      console.error("Error deleting flower:", err);
+      alert("Failed to delete flower. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -111,12 +115,41 @@ function App() {
     setCurrentView('gallery');
     setSelectedFlower(null);
     setEditingFlower(null);
-    // Clear URL parameters
     window.history.replaceState({}, '', window.location.pathname);
   };
 
+  // Loading screen
+  if (isLoading && flowers.length === 0) {
+    return (
+      <div className="app loading-screen">
+        <div className="loading-content">
+          <div className="loading-spinner"></div>
+          <p>Loading flowers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error screen
+  if (error && flowers.length === 0) {
+    return (
+      <div className="app error-screen">
+        <div className="error-content">
+          <p>⚠️ {error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
+
       {currentView === 'gallery' && (
         <FlowerGallery
           flowers={flowers}
