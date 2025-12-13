@@ -4,13 +4,6 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import './FlowerDetail.css';
 
-// Language options for voice-over
-const INDIAN_LANGUAGES = [
-    { code: 'en-IN', name: 'English', translationCode: 'en' },
-    { code: 'hi-IN', name: 'हिन्दी (Hindi)', translationCode: 'hi' },
-    { code: 'ml-IN', name: 'മലയാളം (Malayalam)', translationCode: 'ml' }
-];
-
 // Color keyword to CSS color mapping
 const COLOR_MAP = {
     red: '#e53e3e',
@@ -79,7 +72,6 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
     const [showQRCode, setShowQRCode] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isPreparingSpeech, setIsPreparingSpeech] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState(INDIAN_LANGUAGES[0]);
     const menuRef = useRef(null);
     const speechRef = useRef(null);
 
@@ -138,17 +130,6 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
         }
     };
 
-    // Handle language change (for voice selection only)
-    const handleLanguageChange = (e) => {
-        const langCode = e.target.value;
-        const language = INDIAN_LANGUAGES.find(lang => lang.code === langCode);
-        setSelectedLanguage(language);
-
-        // Stop speaking if currently speaking
-        if (isSpeaking) {
-            handleStopSpeaking();
-        }
-    };
 
     const handleToggleQR = () => {
         setShowQRCode(!showQRCode);
@@ -207,7 +188,7 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
 
         // Create speech utterance
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = selectedLanguage.code; // Use selected language
+        utterance.lang = 'en-US'; // Use English
         utterance.rate = 0.9; // Slightly slower for clarity
         utterance.pitch = 1;
         utterance.volume = 1;
@@ -425,21 +406,6 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                         <span>🔒</span> View Only
                     </div>
                 )}
-                <div className="language-selector-wrapper">
-                    <select
-                        className="language-selector"
-                        value={selectedLanguage.code}
-                        onChange={handleLanguageChange}
-                        disabled={isSpeaking}
-                        title="Select Language"
-                    >
-                        {INDIAN_LANGUAGES.map(lang => (
-                            <option key={lang.code} value={lang.code}>
-                                {lang.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
                 {!isViewOnly && (
                     <div className="menu-container" ref={menuRef}>
                         <button className="edit-pen-btn" onClick={handleMenuToggle} title="Options">
@@ -499,7 +465,18 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                             onClick={handleSpeak}
                             title={isPreparingSpeech ? "Preparing..." : isSpeaking ? "Stop Voice-Over" : "Play Voice-Over"}
                         >
-                            {isPreparingSpeech ? '' : isSpeaking ? '🔊' : '🔇'}
+                            {isSpeaking ? (
+                                <div className="dancing-bars">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            ) : isPreparingSpeech ? (
+                                <div className="speech-loader"></div>
+                            ) : (
+                                '🔊'
+                            )}
                         </button>
                     </div>
 
@@ -577,6 +554,6 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
