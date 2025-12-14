@@ -93,6 +93,8 @@ export async function translateFlowerContent(flower, targetLanguage) {
     }
 
     const prompt = `Translate the following flower information to ${targetLanguage}.
+IMPORTANT: Translate EXACTLY as written. Do NOT summarize, shorten, or modify the content. 
+Keep the FULL original length and all details. Just translate word-for-word.
 Return ONLY a JSON object with the translated fields. No explanations.
 
 Flower Information:
@@ -103,14 +105,14 @@ Flower Information:
 - Blooming Season: ${flower.bloomingSeason || ''}
 - Care Instructions: ${flower.careInstructions || ''}
 
-Return JSON format:
+Return JSON format (translate each field completely, keeping full length):
 {
   "name": "translated name",
   "type": "translated type",
   "color": "translated color",
-  "description": "translated description",
+  "description": "FULL translated description - same length as original",
   "bloomingSeason": "translated season",
-  "careInstructions": "translated care"
+  "careInstructions": "FULL translated care instructions - same length as original"
 }`;
 
     try {

@@ -288,6 +288,14 @@ function App() {
 
               const result = await summarizeFlowerContent(selectedFlower);
               setSummarizedContent(result);
+
+              // Auto-scroll to summarized content
+              setTimeout(() => {
+                const section = document.getElementById('summarized-section');
+                if (section) {
+                  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }, 100);
             } catch (err) {
               console.error('Summarize failed:', err);
               alert('Summarize failed. Please try again.');

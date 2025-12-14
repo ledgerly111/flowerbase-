@@ -532,7 +532,7 @@ export default function FlowerDetail({
 
                     {/* AI Summarized Content */}
                     {summarizedContent && (
-                        <div className="summarized-content">
+                        <div id="summarized-section" className="summarized-content">
                             <div className="summarized-header">
                                 <span>✨</span>
                                 <h4>{summarizedContent.type === 'expanded' ? 'Expanded by Flora' : 'Key Points by Flora'}</h4>
