@@ -164,8 +164,8 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
         // Set preparing state to show loading animation
         setIsPreparingSpeech(true);
 
-        // Use original flower content (no translation)
-        const content = {
+        // Use translated content if available, otherwise use original
+        const content = translatedContent || {
             name: flower.name,
             type: flower.type,
             color: flower.color,
@@ -197,9 +197,16 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
             textToSpeak += ` Care Instructions: ${content.careInstructions}.`;
         }
 
+        // Set language code for speech synthesis
+        let langCode = 'en-US';
+        if (translatedContent) {
+            if (selectedLanguage === 'Hindi') langCode = 'hi-IN';
+            else if (selectedLanguage === 'Malayalam') langCode = 'ml-IN';
+        }
+
         // Create speech utterance
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = 'en-US'; // Use English
+        utterance.lang = langCode;
         utterance.rate = 0.9; // Slightly slower for clarity
         utterance.pitch = 1;
         utterance.volume = 1;
