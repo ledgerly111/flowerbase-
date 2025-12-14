@@ -132,8 +132,8 @@ export default function FloatingAIButton({
                 onClick={handleToggle}
                 disabled={isTranslating}
             >
-                <span className="ai-icon">
-                    {isOpen ? '✕' : '⚝'}
+                <span className={`ai-icon ${!isOpen ? 'white-sparkle' : ''}`}>
+                    {isOpen ? '✕' : '✨'}
                 </span>
                 {!isOpen && <span className="ai-label">AI</span>}
             </button>

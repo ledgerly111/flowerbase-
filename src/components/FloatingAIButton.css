@@ -116,6 +116,11 @@
     z-index: 1;
 }
 
+/* Make sparkle emoji white */
+.ai-icon.white-sparkle {
+    filter: brightness(0) invert(1);
+}
+
 .ai-label {
     font-size: 0.75rem;
     font-weight: 800;
