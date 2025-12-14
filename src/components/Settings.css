@@ -270,3 +270,122 @@
         align-items: center;
     }
 }
+
+/* ========== Theme Toggle ========== */
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: 12px;
+    gap: 1rem;
+}
+
+.setting-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.setting-label {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.setting-description {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.theme-toggle {
+    position: relative;
+    width: 70px;
+    height: 36px;
+    border-radius: 18px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+}
+
+.theme-toggle.light {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.theme-toggle.dark {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+}
+
+.toggle-icon {
+    position: absolute;
+    font-size: 1.2rem;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle.light .toggle-icon {
+    left: 8px;
+}
+
+.theme-toggle.dark .toggle-icon {
+    right: 8px;
+}
+
+.toggle-slider {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle.light .toggle-slider {
+    left: 4px;
+}
+
+.theme-toggle.dark .toggle-slider {
+    left: 38px;
+}
+
+/* ========== Dark Mode Settings Modal ========== */
+[data-theme="dark"] .settings-modal {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .section-heading {
+    color: var(--text);
+    border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .stat-card {
+    background: linear-gradient(135deg, #2d1f3d 0%, #1e1b4b 100%);
+}
+
+[data-theme="dark"] .storage-bar {
+    background: var(--border);
+}
+
+[data-theme="dark"] .info-box {
+    background: var(--surface-light);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .info-box p,
+[data-theme="dark"] .info-box li {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .about-info p {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .storage-bar-header,
+[data-theme="dark"] .stat-label {
+    color: var(--text-muted);
+}

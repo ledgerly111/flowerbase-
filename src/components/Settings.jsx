@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getStorageStats } from '../firebaseService';
 import './Settings.css';
 
-export default function Settings({ onClose }) {
+export default function Settings({ onClose, darkMode, onToggleDarkMode }) {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -33,6 +33,27 @@ export default function Settings({ onClose }) {
                 </div>
 
                 <div className="settings-content">
+                    {/* Appearance Section */}
+                    <section className="settings-section">
+                        <h3 className="section-heading">
+                            <span className="section-icon">🎨</span>
+                            Appearance
+                        </h3>
+                        <div className="setting-item">
+                            <div className="setting-info">
+                                <span className="setting-label">Dark Mode</span>
+                                <span className="setting-description">Switch between light and dark theme</span>
+                            </div>
+                            <button
+                                className={`theme-toggle ${darkMode ? 'dark' : 'light'}`}
+                                onClick={onToggleDarkMode}
+                            >
+                                <span className="toggle-icon">{darkMode ? '🌙' : '☀️'}</span>
+                                <span className="toggle-slider"></span>
+                            </button>
+                        </div>
+                    </section>
+
                     {/* Storage Section */}
                     <section className="settings-section">
                         <h3 className="section-heading">

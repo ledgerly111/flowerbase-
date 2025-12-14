@@ -32,6 +32,47 @@ function App() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSparkle, setShowSparkle] = useState(false);
 
+  // Dark Mode state
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Initialize dark mode based on user preference or system preference
+  useEffect(() => {
+    const initTheme = () => {
+      // Check if we're in view-only mode (QR visitor)
+      const params = new URLSearchParams(window.location.search);
+      const isQRVisitor = params.get('flower') !== null;
+
+      if (isQRVisitor) {
+        // For QR visitors: use system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setDarkMode(prefersDark);
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      } else {
+        // For regular users: check localStorage
+        const savedTheme = localStorage.getItem('flowerbase_theme');
+        if (savedTheme) {
+          const isDark = savedTheme === 'dark';
+          setDarkMode(isDark);
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        } else {
+          // Default to light if no preference saved
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      }
+    };
+
+    initTheme();
+  }, []);
+
+  // Handle dark mode toggle
+  const handleToggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    const theme = newDarkMode ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('flowerbase_theme', theme);
+  };
+
   // Load flowers from Firebase on mount
   useEffect(() => {
     const loadFlowers = async () => {
@@ -210,7 +251,13 @@ function App() {
           {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>}
 
           {/* Settings Modal */}
-          {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+          {showSettings && (
+            <Settings
+              onClose={() => setShowSettings(false)}
+              darkMode={darkMode}
+              onToggleDarkMode={handleToggleDarkMode}
+            />
+          )}
         </>
       )}
 
