@@ -274,13 +274,9 @@ function App() {
 
               if (cached) {
                 console.log('Using cached translation');
-                setShowSparkle(false);
                 setTranslatedContent(cached);
               } else {
-                // Show sparkle animation
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                setShowSparkle(false);
-
+                // API call - sparkle continues until this completes
                 const result = await translateFlowerContent(selectedFlower, language);
                 setTranslatedContent(result);
 
@@ -293,8 +289,8 @@ function App() {
             } catch (err) {
               console.error('Translation failed:', err);
               alert('Translation failed. Please try again.');
-              setShowSparkle(false);
             } finally {
+              setShowSparkle(false);
               setIsTranslating(false);
             }
           }}
@@ -311,13 +307,9 @@ function App() {
 
               if (cached) {
                 console.log('Using cached summary');
-                setShowSparkle(false);
                 setSummarizedContent(cached);
               } else {
-                // Show sparkle animation
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                setShowSparkle(false);
-
+                // API call - sparkle continues until this completes
                 const result = await summarizeFlowerContent(selectedFlower);
                 setSummarizedContent(result);
 
@@ -338,8 +330,8 @@ function App() {
             } catch (err) {
               console.error('Summarize failed:', err);
               alert('Summarize failed. Please try again.');
-              setShowSparkle(false);
             } finally {
+              setShowSparkle(false);
               setIsSummarizing(false);
             }
           }}
