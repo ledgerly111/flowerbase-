@@ -2,7 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { translateFlowerContent, isGeminiConfigured } from '../geminiService';
 import './FlowerDetail.css';
+
+// Language options for AI translation
+const LANGUAGES = [
+    { code: 'English', name: 'English' },
+    { code: 'Hindi', name: 'हिन्दी (Hindi)' },
+    { code: 'Malayalam', name: 'മലയാളം (Malayalam)' }
+];
 
 // Color keyword to CSS color mapping
 const COLOR_MAP = {
@@ -72,6 +80,9 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
     const [showQRCode, setShowQRCode] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isPreparingSpeech, setIsPreparingSpeech] = useState(false);
+    const [selectedLanguage, setSelectedLanguage] = useState('English');
+    const [translatedContent, setTranslatedContent] = useState(null);
+    const [isTranslating, setIsTranslating] = useState(false);
     const menuRef = useRef(null);
     const speechRef = useRef(null);
 
@@ -406,6 +417,57 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                         <span>🔒</span> View Only
                     </div>
                 )}
+
+                {/* AI Translation Selector */}
+                {isGeminiConfigured() && (
+                    <div className="ai-translation-wrapper">
+                        <select
+                            className="language-selector"
+                            value={selectedLanguage}
+                            onChange={(e) => {
+                                setSelectedLanguage(e.target.value);
+                                setTranslatedContent(null);
+                            }}
+                            disabled={isTranslating}
+                        >
+                            {LANGUAGES.map(lang => (
+                                <option key={lang.code} value={lang.code}>
+                                    {lang.name}
+                                </option>
+                            ))}
+                        </select>
+                        {selectedLanguage !== 'English' && (
+                            <button
+                                className={`translate-btn ${isTranslating ? 'loading' : ''} ${translatedContent ? 'translated' : ''}`}
+                                onClick={async () => {
+                                    if (translatedContent) {
+                                        setTranslatedContent(null);
+                                        return;
+                                    }
+                                    setIsTranslating(true);
+                                    try {
+                                        const result = await translateFlowerContent(flower, selectedLanguage);
+                                        setTranslatedContent(result);
+                                    } catch (err) {
+                                        console.error('Translation failed:', err);
+                                        alert('Translation failed. Please try again.');
+                                    } finally {
+                                        setIsTranslating(false);
+                                    }
+                                }}
+                                disabled={isTranslating}
+                            >
+                                {isTranslating ? (
+                                    <span className="btn-loader"></span>
+                                ) : translatedContent ? (
+                                    '✗ Original'
+                                ) : (
+                                    '🌐 Translate'
+                                )}
+                            </button>
+                        )}
+                    </div>
+                )}
                 {!isViewOnly && (
                     <div className="menu-container" ref={menuRef}>
                         <button className="edit-pen-btn" onClick={handleMenuToggle} title="Options">
@@ -458,7 +520,7 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                 <div className="detail-info-card card">
                     <div className="title-with-speaker">
                         <h1 className="detail-title">
-                            {flower.name}
+                            {translatedContent?.name || flower.name}
                         </h1>
                         <button
                             className={`speaker-btn ${isSpeaking ? 'speaking' : ''} ${isPreparingSpeech ? 'loading' : ''}`}
@@ -485,10 +547,10 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                             {flower.category && (
                                 <span className="detail-tag category-tag">{flower.category}</span>
                             )}
-                            {flower.type && (
-                                <span className="detail-tag">{flower.type}</span>
+                            {(translatedContent?.type || flower.type) && (
+                                <span className="detail-tag">{translatedContent?.type || flower.type}</span>
                             )}
-                            {flower.color && (
+                            {(translatedContent?.color || flower.color) && (
                                 <span
                                     className="detail-tag color-tag"
                                     style={{
@@ -497,7 +559,7 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                                         boxShadow: `0 2px 8px ${extractColor(flower.color)}33`
                                     }}
                                 >
-                                    {flower.color}
+                                    {translatedContent?.color || flower.color}
                                 </span>
                             )}
                         </div>
@@ -532,24 +594,24 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                         </div>
                     )}
 
-                    {flower.description && (
+                    {(translatedContent?.description || flower.description) && (
                         <div className="detail-section">
                             <h3 className="section-title">Description</h3>
-                            <p className="section-content">{flower.description}</p>
+                            <p className="section-content">{translatedContent?.description || flower.description}</p>
                         </div>
                     )}
 
-                    {flower.bloomingSeason && (
+                    {(translatedContent?.bloomingSeason || flower.bloomingSeason) && (
                         <div className="detail-section">
                             <h3 className="section-title">Blooming Season</h3>
-                            <p className="section-content">{flower.bloomingSeason}</p>
+                            <p className="section-content">{translatedContent?.bloomingSeason || flower.bloomingSeason}</p>
                         </div>
                     )}
 
-                    {flower.careInstructions && (
+                    {(translatedContent?.careInstructions || flower.careInstructions) && (
                         <div className="detail-section">
                             <h3 className="section-title">Care Instructions</h3>
-                            <p className="section-content">{flower.careInstructions}</p>
+                            <p className="section-content">{translatedContent?.careInstructions || flower.careInstructions}</p>
                         </div>
                     )}
                 </div>

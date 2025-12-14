@@ -319,6 +319,72 @@
     align-items: center;
 }
 
+/* AI Translation Wrapper */
+.ai-translation-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ai-translation-wrapper .language-selector {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-translation-wrapper .language-selector:hover {
+    border-color: #ec4899;
+}
+
+.translate-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 110px;
+    box-shadow: 0 3px 10px rgba(236, 72, 153, 0.3);
+}
+
+.translate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(236, 72, 153, 0.4);
+}
+
+.translate-btn.translated {
+    background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+    box-shadow: 0 3px 10px rgba(107, 114, 128, 0.3);
+}
+
+.translate-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.translate-btn .btn-loader {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+
 .detail-tags {
     display: flex;
     gap: var(--spacing-sm);

@@ -1,0 +1,248 @@
+/**
+ * Gemini AI Service for Flower Base
+ * Features: Translation, Description Generation, Flower Identification
+ */
+
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
+
+/**
+ * Make a request to Gemini API
+ */
+async function callGemini(prompt, imageBase64 = null) {
+    if (!GEMINI_API_KEY) {
+        throw new Error('Gemini API key not configured');
+    }
+
+    const parts = [{ text: prompt }];
+
+    // Add image if provided
+    if (imageBase64) {
+        // Remove data URL prefix if present
+        const base64Data = imageBase64.includes('base64,')
+            ? imageBase64.split('base64,')[1]
+            : imageBase64;
+
+        parts.unshift({
+            inline_data: {
+                mime_type: 'image/jpeg',
+                data: base64Data
+            }
+        });
+    }
+
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            contents: [{
+                parts: parts
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2048,
+            }
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'Gemini API error');
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+/**
+ * Translate text to a target language
+ * @param {string} text - Text to translate
+ * @param {string} targetLanguage - Target language (e.g., 'Hindi', 'Malayalam')
+ * @returns {Promise<string>} - Translated text
+ */
+export async function translateText(text, targetLanguage) {
+    if (!text || targetLanguage === 'English') return text;
+
+    const prompt = `Translate the following text to ${targetLanguage}. 
+Only provide the translation, no explanations or notes.
+Maintain the original formatting and structure.
+
+Text to translate:
+${text}`;
+
+    try {
+        const translation = await callGemini(prompt);
+        return translation.trim();
+    } catch (error) {
+        console.error('Translation error:', error);
+        return text; // Fallback to original
+    }
+}
+
+/**
+ * Translate all flower content to a target language
+ * @param {object} flower - Flower object with name, type, description, etc.
+ * @param {string} targetLanguage - Target language
+ * @returns {Promise<object>} - Translated flower content
+ */
+export async function translateFlowerContent(flower, targetLanguage) {
+    if (targetLanguage === 'English') {
+        return null; // No translation needed
+    }
+
+    const prompt = `Translate the following flower information to ${targetLanguage}.
+Return ONLY a JSON object with the translated fields. No explanations.
+
+Flower Information:
+- Name: ${flower.name || ''}
+- Type: ${flower.type || ''}
+- Color: ${flower.color || ''}
+- Description: ${flower.description || ''}
+- Blooming Season: ${flower.bloomingSeason || ''}
+- Care Instructions: ${flower.careInstructions || ''}
+
+Return JSON format:
+{
+  "name": "translated name",
+  "type": "translated type",
+  "color": "translated color",
+  "description": "translated description",
+  "bloomingSeason": "translated season",
+  "careInstructions": "translated care"
+}`;
+
+    try {
+        const result = await callGemini(prompt);
+        // Extract JSON from response
+        const jsonMatch = result.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        return null;
+    } catch (error) {
+        console.error('Translation error:', error);
+        return null;
+    }
+}
+
+/**
+ * Generate flower description from an image
+ * @param {string} imageBase64 - Base64 encoded image
+ * @returns {Promise<object>} - Generated flower details
+ */
+export async function generateFlowerDescription(imageBase64) {
+    const prompt = `Analyze this flower image and provide detailed information.
+Return ONLY a JSON object with no additional text or explanation.
+
+Required JSON format:
+{
+  "name": "Flower name (common name)",
+  "scientificName": "Scientific/botanical name if known",
+  "type": "Flower family or type",
+  "color": "Primary color(s) of the flower",
+  "description": "A detailed 2-3 paragraph description of the flower, its characteristics, history, and significance",
+  "bloomingSeason": "When this flower typically blooms",
+  "careInstructions": "Basic care tips for growing this flower"
+}`;
+
+    try {
+        const result = await callGemini(prompt, imageBase64);
+        // Extract JSON from response
+        const jsonMatch = result.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        throw new Error('Failed to parse AI response');
+    } catch (error) {
+        console.error('Description generation error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Identify a flower from an image
+ * @param {string} imageBase64 - Base64 encoded image
+ * @returns {Promise<object>} - Identified flower info
+ */
+export async function identifyFlower(imageBase64) {
+    const prompt = `Identify this flower in the image.
+Return ONLY a JSON object with the following information:
+
+{
+  "name": "Common name of the flower",
+  "scientificName": "Scientific name",
+  "confidence": "high/medium/low",
+  "description": "Brief 1-2 sentence description",
+  "similarFlowers": ["Similar flower 1", "Similar flower 2"]
+}`;
+
+    try {
+        const result = await callGemini(prompt, imageBase64);
+        const jsonMatch = result.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        throw new Error('Failed to identify flower');
+    } catch (error) {
+        console.error('Flower identification error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get care recommendations for a flower
+ * @param {string} flowerName - Name of the flower
+ * @param {string} climate - Optional climate/region
+ * @returns {Promise<string>} - Care recommendations
+ */
+export async function getCareRecommendations(flowerName, climate = '') {
+    const climateText = climate ? ` in ${climate} climate` : '';
+    const prompt = `Provide practical care tips for growing ${flowerName}${climateText}.
+Include:
+- Watering frequency
+- Sunlight requirements
+- Soil type
+- Best planting time
+- Common problems and solutions
+
+Keep it concise and practical.`;
+
+    try {
+        return await callGemini(prompt);
+    } catch (error) {
+        console.error('Care recommendations error:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get fun facts about a flower
+ * @param {string} flowerName - Name of the flower
+ * @returns {Promise<string[]>} - Array of fun facts
+ */
+export async function getFlowerFacts(flowerName) {
+    const prompt = `Give me 5 interesting and unique facts about ${flowerName}.
+Return ONLY a JSON array of strings, no explanations:
+["fact 1", "fact 2", "fact 3", "fact 4", "fact 5"]`;
+
+    try {
+        const result = await callGemini(prompt);
+        const jsonMatch = result.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+        }
+        return [];
+    } catch (error) {
+        console.error('Fun facts error:', error);
+        return [];
+    }
+}
+
+/**
+ * Check if Gemini API is configured
+ */
+export function isGeminiConfigured() {
+    return !!GEMINI_API_KEY;
+}
