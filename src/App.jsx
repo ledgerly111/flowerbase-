@@ -6,7 +6,7 @@ import Settings from './components/Settings';
 import FloatingAIButton from './components/FloatingAIButton';
 import FloraChat from './components/FloraChat';
 import { getFlowers, getFlowerById, addFlower, updateFlower, deleteFlower } from './firebaseService';
-import { translateFlowerContent, isGeminiConfigured } from './geminiService';
+import { translateFlowerContent, summarizeFlowerContent, isGeminiConfigured } from './geminiService';
 import './App.css';
 
 function App() {
@@ -25,6 +25,11 @@ function App() {
   const [translatedContent, setTranslatedContent] = useState(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [showFloraChat, setShowFloraChat] = useState(false);
+
+  // AI Summarize state
+  const [summarizedContent, setSummarizedContent] = useState(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [showSparkle, setShowSparkle] = useState(false);
 
   // Load flowers from Firebase on mount
   useEffect(() => {
@@ -247,6 +252,9 @@ function App() {
             isViewOnly={isViewOnly}
             translatedContent={translatedContent}
             selectedLanguage={selectedLanguage}
+            summarizedContent={summarizedContent}
+            showSparkle={showSparkle}
+            onResetSummary={() => setSummarizedContent(null)}
           />
         )}
       </main>
@@ -270,7 +278,26 @@ function App() {
           onChat={() => {
             setShowFloraChat(true);
           }}
+          onSummarize={async () => {
+            setShowSparkle(true);
+            setIsSummarizing(true);
+            try {
+              // Show sparkle animation first
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              setShowSparkle(false);
+
+              const result = await summarizeFlowerContent(selectedFlower);
+              setSummarizedContent(result);
+            } catch (err) {
+              console.error('Summarize failed:', err);
+              alert('Summarize failed. Please try again.');
+              setShowSparkle(false);
+            } finally {
+              setIsSummarizing(false);
+            }
+          }}
           isTranslating={isTranslating}
+          isSummarizing={isSummarizing}
           currentLanguage={selectedLanguage}
           onResetLanguage={() => {
             setSelectedLanguage('English');

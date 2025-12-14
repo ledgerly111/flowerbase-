@@ -10,7 +10,9 @@ const LANGUAGES = [
 export default function FloatingAIButton({
     onTranslate,
     onChat,
+    onSummarize,
     isTranslating = false,
+    isSummarizing = false,
     currentLanguage = 'English',
     onResetLanguage
 }) {
@@ -122,6 +124,27 @@ export default function FloatingAIButton({
                     >
                         <span className="option-icon">💬</span>
                         <span className="option-text">Chat with AI</span>
+                    </button>
+
+                    <button
+                        className={`option-bubble summarize-bubble ${isSummarizing ? 'loading' : ''}`}
+                        style={{ animationDelay: currentLanguage !== 'English' ? '0.15s' : '0.1s' }}
+                        onClick={() => {
+                            setIsOpen(false);
+                            if (onSummarize) onSummarize();
+                        }}
+                        disabled={isSummarizing}
+                    >
+                        <span className="option-icon">
+                            {isSummarizing ? (
+                                <span className="mini-loader"></span>
+                            ) : (
+                                '✨'
+                            )}
+                        </span>
+                        <span className="option-text">
+                            {isSummarizing ? 'Summarizing...' : 'Summarize'}
+                        </span>
                     </button>
                 </div>
             )}

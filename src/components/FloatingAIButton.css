@@ -222,6 +222,21 @@
     background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
 }
 
+/* Summarize bubble */
+.summarize-bubble {
+    background: linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%);
+    color: #6b21a8;
+}
+
+.summarize-bubble:hover {
+    background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%);
+}
+
+.summarize-bubble.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
 /* ========== Language Bubbles ========== */
 .language-bubbles {
     display: flex;

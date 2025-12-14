@@ -75,7 +75,10 @@ export default function FlowerDetail({
     onSelectFlower,
     isViewOnly = false,
     translatedContent = null,
-    selectedLanguage = 'English'
+    selectedLanguage = 'English',
+    summarizedContent = null,
+    showSparkle = false,
+    onResetSummary
 }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
@@ -479,7 +482,7 @@ export default function FlowerDetail({
                 )}
 
                 {/* Flower Information Card */}
-                <div className="detail-info-card card">
+                <div className={`detail-info-card card ${showSparkle ? 'sparkle-animation' : ''}`}>
                     <div className="title-with-speaker">
                         <h1 className="detail-title">
                             {translatedContent?.name || flower.name}
@@ -524,6 +527,59 @@ export default function FlowerDetail({
                                     {translatedContent?.color || flower.color}
                                 </span>
                             )}
+                        </div>
+                    )}
+
+                    {/* AI Summarized Content */}
+                    {summarizedContent && (
+                        <div className="summarized-content">
+                            <div className="summarized-header">
+                                <span>✨</span>
+                                <h4>{summarizedContent.type === 'expanded' ? 'Expanded by Flora' : 'Key Points by Flora'}</h4>
+                                <span className="summarized-badge">
+                                    {summarizedContent.type === 'expanded' ? 'ENRICHED' : 'SUMMARIZED'}
+                                </span>
+                            </div>
+
+                            {summarizedContent.keyPoints && summarizedContent.keyPoints.length > 0 && (
+                                <ul className="key-points-list">
+                                    {summarizedContent.keyPoints.map((point, idx) => (
+                                        <li key={idx}>{point}</li>
+                                    ))}
+                                </ul>
+                            )}
+
+                            {summarizedContent.quickCare && (
+                                <div className="quick-care-box">
+                                    <h5>🌱 Quick Care</h5>
+                                    <p>{summarizedContent.quickCare}</p>
+                                </div>
+                            )}
+
+                            {summarizedContent.bestFor && (
+                                <div className="best-for-box">
+                                    <h5>⭐ Best For</h5>
+                                    <p>{summarizedContent.bestFor}</p>
+                                </div>
+                            )}
+
+                            {summarizedContent.description && summarizedContent.type === 'expanded' && (
+                                <div className="detail-section" style={{ marginTop: '1rem' }}>
+                                    <h3 className="section-title">Expanded Description</h3>
+                                    <p className="section-content">{summarizedContent.description}</p>
+                                </div>
+                            )}
+
+                            {summarizedContent.careInstructions && summarizedContent.type === 'expanded' && (
+                                <div className="detail-section">
+                                    <h3 className="section-title">Detailed Care Guide</h3>
+                                    <p className="section-content">{summarizedContent.careInstructions}</p>
+                                </div>
+                            )}
+
+                            <button className="reset-summary-btn" onClick={onResetSummary}>
+                                Show Original Content
+                            </button>
                         </div>
                     )}
 

@@ -306,3 +306,82 @@ Respond as Flora:`;
         throw error;
     }
 }
+
+/**
+ * Summarize or expand flower content based on length
+ * @param {object} flower - Flower object with all details
+ * @returns {Promise<object>} - Summarized or expanded content
+ */
+export async function summarizeFlowerContent(flower) {
+    // Calculate content length to determine if we should summarize or expand
+    const descriptionLength = (flower.description || '').length;
+    const careLength = (flower.careInstructions || '').length;
+    const totalLength = descriptionLength + careLength;
+
+    const isShortContent = totalLength < 200;
+
+    if (isShortContent) {
+        // Expand short content
+        const prompt = `You are Flora, a flower expert. The following flower has brief information. 
+Please expand and enrich the content with more details, interesting facts, and care tips.
+
+Current Flower Information:
+- Name: ${flower.name || 'Unknown'}
+- Type: ${flower.type || 'Not specified'}
+- Color: ${flower.color || 'Not specified'}
+- Description: ${flower.description || 'No description'}
+- Blooming Season: ${flower.bloomingSeason || 'Not specified'}
+- Care Instructions: ${flower.careInstructions || 'Not specified'}
+
+Return ONLY a JSON object with enriched content:
+{
+  "type": "expanded",
+  "keyPoints": ["3-5 key facts about this flower"],
+  "description": "A detailed 2-3 paragraph description with interesting facts, history, and characteristics",
+  "careInstructions": "Comprehensive care guide with watering, sunlight, soil, and seasonal tips"
+}`;
+
+        try {
+            const result = await callGemini(prompt);
+            const jsonMatch = result.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            }
+            throw new Error('Failed to parse response');
+        } catch (error) {
+            console.error('Expand error:', error);
+            throw error;
+        }
+    } else {
+        // Summarize long content to key points
+        const prompt = `You are Flora, a flower expert. Summarize the following flower information into concise key points.
+
+Flower Information:
+- Name: ${flower.name || 'Unknown'}
+- Type: ${flower.type || 'Not specified'}
+- Color: ${flower.color || 'Not specified'}
+- Description: ${flower.description || 'No description'}
+- Blooming Season: ${flower.bloomingSeason || 'Not specified'}
+- Care Instructions: ${flower.careInstructions || 'Not specified'}
+
+Return ONLY a JSON object with summarized content:
+{
+  "type": "summarized",
+  "keyPoints": ["5-7 most important key points about this flower, each 1 short sentence"],
+  "quickCare": "One sentence care summary",
+  "bestFor": "What this flower is best for (e.g., gardens, bouquets, beginners)"
+}`;
+
+        try {
+            const result = await callGemini(prompt);
+            const jsonMatch = result.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            }
+            throw new Error('Failed to parse response');
+        } catch (error) {
+            console.error('Summarize error:', error);
+            throw error;
+        }
+    }
+}
