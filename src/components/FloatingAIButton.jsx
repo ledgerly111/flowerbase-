@@ -133,7 +133,7 @@ export default function FloatingAIButton({
                 disabled={isTranslating}
             >
                 <span className="ai-icon">
-                    {isOpen ? '✕' : '✨'}
+                    {isOpen ? '✕' : '⚝'}
                 </span>
                 {!isOpen && <span className="ai-label">AI</span>}
             </button>
