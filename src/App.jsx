@@ -7,6 +7,7 @@ import FloatingAIButton from './components/FloatingAIButton';
 import FloraChat from './components/FloraChat';
 import { getFlowers, getFlowerById, addFlower, updateFlower, deleteFlower } from './firebaseService';
 import { translateFlowerContent, summarizeFlowerContent, isGeminiConfigured } from './geminiService';
+import { getCacheKey, getFromCache, saveToCache } from './cacheService';
 import './App.css';
 
 function App() {
@@ -267,12 +268,28 @@ function App() {
             setIsTranslating(true);
             setSelectedLanguage(language);
             try {
-              // Show sparkle animation briefly
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              setShowSparkle(false);
+              // Check cache first
+              const cacheKey = getCacheKey('translate', selectedFlower.id, language);
+              const cached = getFromCache(cacheKey);
 
-              const result = await translateFlowerContent(selectedFlower, language);
-              setTranslatedContent(result);
+              if (cached) {
+                console.log('Using cached translation');
+                setShowSparkle(false);
+                setTranslatedContent(cached);
+              } else {
+                // Show sparkle animation
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                setShowSparkle(false);
+
+                const result = await translateFlowerContent(selectedFlower, language);
+                setTranslatedContent(result);
+
+                // Save to cache
+                if (result) {
+                  saveToCache(cacheKey, result);
+                  console.log('Translation cached');
+                }
+              }
             } catch (err) {
               console.error('Translation failed:', err);
               alert('Translation failed. Please try again.');
@@ -288,12 +305,28 @@ function App() {
             setShowSparkle(true);
             setIsSummarizing(true);
             try {
-              // Show sparkle animation first
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              setShowSparkle(false);
+              // Check cache first
+              const cacheKey = getCacheKey('summarize', selectedFlower.id, '');
+              const cached = getFromCache(cacheKey);
 
-              const result = await summarizeFlowerContent(selectedFlower);
-              setSummarizedContent(result);
+              if (cached) {
+                console.log('Using cached summary');
+                setShowSparkle(false);
+                setSummarizedContent(cached);
+              } else {
+                // Show sparkle animation
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                setShowSparkle(false);
+
+                const result = await summarizeFlowerContent(selectedFlower);
+                setSummarizedContent(result);
+
+                // Save to cache
+                if (result) {
+                  saveToCache(cacheKey, result);
+                  console.log('Summary cached');
+                }
+              }
 
               // Auto-scroll to summarized content
               setTimeout(() => {
