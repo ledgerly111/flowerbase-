@@ -263,14 +263,20 @@ function App() {
       {isGeminiConfigured() && currentView === 'detail' && selectedFlower && (
         <FloatingAIButton
           onTranslate={async (language) => {
+            setShowSparkle(true);
             setIsTranslating(true);
             setSelectedLanguage(language);
             try {
+              // Show sparkle animation briefly
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              setShowSparkle(false);
+
               const result = await translateFlowerContent(selectedFlower, language);
               setTranslatedContent(result);
             } catch (err) {
               console.error('Translation failed:', err);
               alert('Translation failed. Please try again.');
+              setShowSparkle(false);
             } finally {
               setIsTranslating(false);
             }
