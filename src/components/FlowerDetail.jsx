@@ -2,15 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { translateFlowerContent, isGeminiConfigured } from '../geminiService';
 import './FlowerDetail.css';
-
-// Language options for AI translation
-const LANGUAGES = [
-    { code: 'English', name: 'English' },
-    { code: 'Hindi', name: 'हिन्दी (Hindi)' },
-    { code: 'Malayalam', name: 'മലയാളം (Malayalam)' }
-];
 
 // Color keyword to CSS color mapping
 const COLOR_MAP = {
@@ -74,15 +66,22 @@ const extractColor = (colorString) => {
     return '#10b981';
 };
 
-export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, onDelete, onSelectFlower, isViewOnly = false }) {
+export default function FlowerDetail({
+    flower,
+    allFlowers = [],
+    onBack,
+    onEdit,
+    onDelete,
+    onSelectFlower,
+    isViewOnly = false,
+    translatedContent = null,
+    selectedLanguage = 'English'
+}) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
     const [showQRCode, setShowQRCode] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isPreparingSpeech, setIsPreparingSpeech] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState('English');
-    const [translatedContent, setTranslatedContent] = useState(null);
-    const [isTranslating, setIsTranslating] = useState(false);
     const menuRef = useRef(null);
     const speechRef = useRef(null);
 
@@ -425,54 +424,10 @@ export default function FlowerDetail({ flower, allFlowers = [], onBack, onEdit, 
                     </div>
                 )}
 
-                {/* AI Translation Selector */}
-                {isGeminiConfigured() && (
-                    <div className="ai-translation-wrapper">
-                        <select
-                            className="language-selector"
-                            value={selectedLanguage}
-                            onChange={(e) => {
-                                setSelectedLanguage(e.target.value);
-                                setTranslatedContent(null);
-                            }}
-                            disabled={isTranslating}
-                        >
-                            {LANGUAGES.map(lang => (
-                                <option key={lang.code} value={lang.code}>
-                                    {lang.name}
-                                </option>
-                            ))}
-                        </select>
-                        {selectedLanguage !== 'English' && (
-                            <button
-                                className={`translate-btn ${isTranslating ? 'loading' : ''} ${translatedContent ? 'translated' : ''}`}
-                                onClick={async () => {
-                                    if (translatedContent) {
-                                        setTranslatedContent(null);
-                                        return;
-                                    }
-                                    setIsTranslating(true);
-                                    try {
-                                        const result = await translateFlowerContent(flower, selectedLanguage);
-                                        setTranslatedContent(result);
-                                    } catch (err) {
-                                        console.error('Translation failed:', err);
-                                        alert('Translation failed. Please try again.');
-                                    } finally {
-                                        setIsTranslating(false);
-                                    }
-                                }}
-                                disabled={isTranslating}
-                            >
-                                {isTranslating ? (
-                                    <span className="btn-loader"></span>
-                                ) : translatedContent ? (
-                                    '✗ Original'
-                                ) : (
-                                    '🌐 Translate'
-                                )}
-                            </button>
-                        )}
+                {/* Language indicator when translated */}
+                {translatedContent && (
+                    <div className="translation-indicator">
+                        <span>🌐</span> {selectedLanguage}
                     </div>
                 )}
                 {!isViewOnly && (

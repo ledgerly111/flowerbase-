@@ -3,7 +3,9 @@ import FlowerGallery from './components/FlowerGallery';
 import FlowerForm from './components/FlowerForm';
 import FlowerDetail from './components/FlowerDetail';
 import Settings from './components/Settings';
+import FloatingAIButton from './components/FloatingAIButton';
 import { getFlowers, getFlowerById, addFlower, updateFlower, deleteFlower } from './firebaseService';
+import { translateFlowerContent, isGeminiConfigured } from './geminiService';
 import './App.css';
 
 function App() {
@@ -16,6 +18,11 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
+
+  // AI Translation state
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [translatedContent, setTranslatedContent] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // Load flowers from Firebase on mount
   useEffect(() => {
@@ -236,9 +243,39 @@ function App() {
             onDelete={() => handleDeleteFlower(selectedFlower.id)}
             onSelectFlower={handleSelectFlower}
             isViewOnly={isViewOnly}
+            translatedContent={translatedContent}
+            selectedLanguage={selectedLanguage}
           />
         )}
       </main>
+
+      {/* Floating AI Button */}
+      {isGeminiConfigured() && currentView === 'detail' && selectedFlower && (
+        <FloatingAIButton
+          onTranslate={async (language) => {
+            setIsTranslating(true);
+            setSelectedLanguage(language);
+            try {
+              const result = await translateFlowerContent(selectedFlower, language);
+              setTranslatedContent(result);
+            } catch (err) {
+              console.error('Translation failed:', err);
+              alert('Translation failed. Please try again.');
+            } finally {
+              setIsTranslating(false);
+            }
+          }}
+          onChat={() => {
+            alert('AI Chat feature coming soon!');
+          }}
+          isTranslating={isTranslating}
+          currentLanguage={selectedLanguage}
+          onResetLanguage={() => {
+            setSelectedLanguage('English');
+            setTranslatedContent(null);
+          }}
+        />
+      )}
     </div>
   );
 }

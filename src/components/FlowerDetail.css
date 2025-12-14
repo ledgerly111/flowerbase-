@@ -384,6 +384,20 @@
     animation: spin 0.8s linear infinite;
 }
 
+/* Translation Indicator Badge */
+.translation-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.4rem 0.8rem;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+}
+
 
 .detail-tags {
     display: flex;
