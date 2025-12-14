@@ -16,6 +16,14 @@ export default function FloraChat({ flower, onClose }) {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
+    // Lock body scroll when chat is open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, []);
+
     // Scroll to bottom when messages change
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,20 +78,21 @@ export default function FloraChat({ flower, onClose }) {
     ];
 
     return (
-        <div className="flora-chat-overlay" onClick={onClose}>
-            <div className="flora-chat-container" onClick={e => e.stopPropagation()}>
+        <div className="flora-chat-overlay">
+            <div className="flora-chat-container">
                 {/* Header */}
                 <div className="flora-chat-header">
-                    <div className="flora-avatar">
-                        <span>🌸</span>
-                    </div>
-                    <div className="flora-info">
-                        <h3>Flora</h3>
-                        <span className="flora-status">Your Flower Expert</span>
-                    </div>
-                    <button className="flora-close-btn" onClick={onClose}>
-                        ✕
+                    <button className="flora-back-btn" onClick={onClose}>
+                        ← Back
                     </button>
+                    <div className="flora-header-center">
+                        <span className="flora-header-avatar">🌸</span>
+                        <div className="flora-header-info">
+                            <h3>Flora</h3>
+                            <span className="flora-status">Your Flower Expert</span>
+                        </div>
+                    </div>
+                    <div className="flora-header-spacer"></div>
                 </div>
 
                 {/* Context indicator */}
