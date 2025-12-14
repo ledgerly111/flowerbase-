@@ -246,3 +246,63 @@ Return ONLY a JSON array of strings, no explanations:
 export function isGeminiConfigured() {
     return !!GEMINI_API_KEY;
 }
+
+/**
+ * Chat with Flora - Context-aware flower assistant
+ * @param {string} userMessage - User's question or message
+ * @param {object} flower - Current flower context (can be null)
+ * @param {array} chatHistory - Previous messages for context
+ * @returns {Promise<string>} - Flora's response
+ */
+export async function chatWithFlora(userMessage, flower = null, chatHistory = []) {
+    // Build context about the current flower
+    let flowerContext = '';
+    if (flower) {
+        flowerContext = `
+CURRENT FLOWER CONTEXT:
+- Name: ${flower.name || 'Unknown'}
+- Type: ${flower.type || 'Not specified'}
+- Color: ${flower.color || 'Not specified'}
+- Description: ${flower.description || 'No description available'}
+- Blooming Season: ${flower.bloomingSeason || 'Not specified'}
+- Care Instructions: ${flower.careInstructions || 'Not specified'}
+- Category: ${flower.category || 'Not specified'}
+`;
+    }
+
+    // Build chat history context
+    let historyContext = '';
+    if (chatHistory.length > 0) {
+        historyContext = '\nCONVERSATION HISTORY:\n';
+        chatHistory.slice(-6).forEach(msg => {
+            historyContext += `${msg.role === 'user' ? 'User' : 'Flora'}: ${msg.content}\n`;
+        });
+    }
+
+    const prompt = `You are Flora, a friendly and knowledgeable AI assistant for the Flower Base app. 
+You are an expert on flowers, plants, gardening, and botanical topics.
+Your personality is warm, helpful, and passionate about flowers.
+
+${flowerContext}
+${historyContext}
+
+GUIDELINES:
+- Be concise but informative (2-4 sentences unless more detail is requested)
+- If the user asks about the current flower, use the context provided above
+- Be enthusiastic about flowers and gardening
+- If you don't know something, say so honestly
+- You can suggest related flowers, care tips, or interesting facts
+- Use flower emojis occasionally to be friendly 🌸🌺🌻
+
+User's question: ${userMessage}
+
+Respond as Flora:`;
+
+    try {
+        const response = await callGemini(prompt);
+        return response.trim();
+    } catch (error) {
+        console.error('Flora chat error:', error);
+        throw error;
+    }
+}

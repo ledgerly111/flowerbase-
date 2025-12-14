@@ -4,6 +4,7 @@ import FlowerForm from './components/FlowerForm';
 import FlowerDetail from './components/FlowerDetail';
 import Settings from './components/Settings';
 import FloatingAIButton from './components/FloatingAIButton';
+import FloraChat from './components/FloraChat';
 import { getFlowers, getFlowerById, addFlower, updateFlower, deleteFlower } from './firebaseService';
 import { translateFlowerContent, isGeminiConfigured } from './geminiService';
 import './App.css';
@@ -23,6 +24,7 @@ function App() {
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [translatedContent, setTranslatedContent] = useState(null);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [showFloraChat, setShowFloraChat] = useState(false);
 
   // Load flowers from Firebase on mount
   useEffect(() => {
@@ -266,7 +268,7 @@ function App() {
             }
           }}
           onChat={() => {
-            alert('AI Chat feature coming soon!');
+            setShowFloraChat(true);
           }}
           isTranslating={isTranslating}
           currentLanguage={selectedLanguage}
@@ -274,6 +276,14 @@ function App() {
             setSelectedLanguage('English');
             setTranslatedContent(null);
           }}
+        />
+      )}
+
+      {/* Flora Chat Modal */}
+      {showFloraChat && (
+        <FloraChat
+          flower={selectedFlower}
+          onClose={() => setShowFloraChat(false)}
         />
       )}
     </div>
