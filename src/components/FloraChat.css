@@ -304,3 +304,66 @@
         border-radius: 0;
     }
 }
+
+/* ========== Dark Mode ========== */
+[data-theme="dark"] .flora-chat-overlay {
+    background: var(--background);
+}
+
+[data-theme="dark"] .flora-chat-container {
+    background: var(--background);
+}
+
+[data-theme="dark"] .flora-messages {
+    background: var(--background);
+}
+
+[data-theme="dark"] .flora-context {
+    background: linear-gradient(135deg, #422006 0%, #713f12 100%);
+    color: #fde68a;
+}
+
+[data-theme="dark"] .flora-message.flora .message-bubble {
+    background: var(--surface);
+    color: var(--text);
+}
+
+[data-theme="dark"] .flora-message.user .message-bubble {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+[data-theme="dark"] .quick-suggestions {
+    background: var(--surface);
+    border-top-color: var(--border);
+}
+
+[data-theme="dark"] .suggestion-btn {
+    background: var(--surface-light);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .suggestion-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .flora-input-area {
+    background: var(--surface);
+    border-top-color: var(--border);
+}
+
+[data-theme="dark"] .flora-input {
+    background: var(--surface-light);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .flora-input::placeholder {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .typing-indicator {
+    background: var(--surface);
+}

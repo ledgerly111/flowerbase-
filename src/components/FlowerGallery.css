@@ -405,3 +405,83 @@
         left: -100%;
     }
 }
+
+/* ========== Dark Mode ========== */
+[data-theme="dark"] .gallery-container {
+    background: var(--background);
+}
+
+[data-theme="dark"] .sidebar {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .sidebar-nav {
+    border-top-color: var(--border);
+}
+
+[data-theme="dark"] .sidebar-link {
+    color: var(--text);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: var(--surface-light);
+}
+
+[data-theme="dark"] .sidebar-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .gallery-content {
+    background: var(--background);
+}
+
+[data-theme="dark"] .gallery-stats {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .stat-divider {
+    background: var(--border);
+}
+
+[data-theme="dark"] .stat-label {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .stat-number {
+    color: var(--text);
+}
+
+[data-theme="dark"] .flower-card {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .flower-card:hover {
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .flower-name {
+    color: var(--text);
+}
+
+[data-theme="dark"] .flower-type {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .flower-description {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .empty-gallery {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .empty-text h2 {
+    color: var(--text);
+}
+
+[data-theme="dark"] .empty-text p {
+    color: var(--text-muted);
+}

@@ -1240,3 +1240,56 @@
     border-color: #6b21a8;
     color: #6b21a8;
 }
+
+/* ========== Dark Mode for Summarized Content ========== */
+[data-theme="dark"] .summarized-content {
+    background: linear-gradient(135deg, #1e1b4b 0%, #2d1f3d 100%);
+    border-color: #4c1d95;
+}
+
+[data-theme="dark"] .summarized-header {
+    border-bottom-color: #4c1d95;
+}
+
+[data-theme="dark"] .summarized-header h4 {
+    color: #c4b5fd;
+}
+
+[data-theme="dark"] .key-points-list li {
+    color: var(--text);
+}
+
+[data-theme="dark"] .quick-care-box {
+    background: var(--surface);
+    border-left-color: #34d399;
+}
+
+[data-theme="dark"] .quick-care-box h5 {
+    color: #34d399;
+}
+
+[data-theme="dark"] .quick-care-box p {
+    color: var(--text);
+}
+
+[data-theme="dark"] .best-for-box {
+    background: linear-gradient(135deg, #422006 0%, #713f12 100%);
+}
+
+[data-theme="dark"] .best-for-box h5 {
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .best-for-box p {
+    color: #fde68a;
+}
+
+[data-theme="dark"] .reset-summary-btn {
+    border-color: #6b7280;
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .reset-summary-btn:hover {
+    border-color: #a855f7;
+    color: #a855f7;
+}
